@@ -108,6 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e0c7fb5f5339a24da0de920bd710b9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CapturedMat: {fileID: 2100000, guid: 1e2f6268e99e0d5428bc4b8bb55e1bd3, type: 2}
 --- !u!1 &5289919651911432406
 GameObject:
   m_ObjectHideFlags: 0
@@ -157,7 +158,10 @@ MonoBehaviour:
   Block: {fileID: 3148078962653950374}
   Marked: 0
   Captured: 0
+  Reinforced: 0
   Floor: {fileID: 4619124276355328352}
+  DirtBlock: {fileID: 3222880244007775886}
+  ReinForcedHealth: 400
   Jobs: []
   Health: 100
 --- !u!1 &8741610081490987193
@@ -173,7 +177,7 @@ GameObject:
   - component: {fileID: 785161312811509393}
   - component: {fileID: 2757251616011543097}
   - component: {fileID: 4619124276355328352}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -269,3 +273,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CapturedMat: {fileID: 2100000, guid: 9211d6b188a8f464f9a149f77f0de8c6, type: 2}
+  LairMat: {fileID: 2100000, guid: 51793f09997ed9446b4a1765ae34dc81, type: 2}
+  ParentTile: {fileID: 1073757041251524877}

@@ -10,8 +10,14 @@ public class Tile : MonoBehaviour
 
     public bool Marked;
     public bool Captured;
+    public bool Reinforced;
+
+    public bool HasBuilding;
 
     public Ground Floor;
+    public Dirt DirtBlock;
+
+    public float ReinForcedHealth = 400;
 
     public List<CreatueJob> Jobs = new List<CreatueJob>();
 
@@ -24,6 +30,19 @@ public class Tile : MonoBehaviour
         {
             TileMap.instance.DestroyDirtAt(GetMapPos());
         }
+    }
+
+    public void GetHealth(float amount)
+    {
+        Health += amount;
+
+        if (Health >= ReinForcedHealth)
+        {
+            Reinforced = true;
+            Health = ReinForcedHealth;
+            TileMap.instance.ReinForceDirtAt(GetMapPos());
+        }
+
     }
 
     private void Start()

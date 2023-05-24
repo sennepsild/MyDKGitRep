@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using System.Linq;
 
 public class Dirt : MonoBehaviour
 {
+    public Material CapturedMat;
     Tile parentTile;
     Renderer rend;
     void Start()
@@ -15,10 +17,16 @@ public class Dirt : MonoBehaviour
         rend = GetComponent<Renderer>();
     }
 
-    
+    public void Capture()
+    {
+        rend.material = CapturedMat;
+    }
 
     private void OnMouseEnter()
     {
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+        if (BuildManager.isBuilding) return;
+        if (BuildManager.isSelling) return;
         if (!parentTile.Marked)
         {
             rend.material.color = Color.yellow;
@@ -32,6 +40,9 @@ public class Dirt : MonoBehaviour
 
     private void OnMouseOver()
     {
+        if (BuildManager.isBuilding) return;
+        if (BuildManager.isSelling) return;
+        if (EventSystem.current.IsPointerOverGameObject()) return;
         if (Input.GetMouseButtonDown(0))
         {
 
@@ -40,11 +51,13 @@ public class Dirt : MonoBehaviour
             if (parentTile.Marked)
             {
                 TileMap.instance.GenerateDigginJobsAtNeigbour(parentTile.GetMapPos());
+                TileMap.instance.RemoveReinforceJobsAtNeigbour(parentTile.GetMapPos());
                 rend.material.color = Color.Lerp(Color.yellow, Color.blue, .5f);
             }
             else
             {
                 TileMap.instance.RemoveDigginJobsAtNeigbour(parentTile.GetMapPos());
+                TileMap.instance.GenerateReinforceJobsAtNeigbour(parentTile.GetMapPos());
                 rend.material.color = Color.yellow;
             }
         }

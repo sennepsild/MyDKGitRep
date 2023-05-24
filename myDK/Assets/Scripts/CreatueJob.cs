@@ -9,10 +9,10 @@ public class CreatueJob : MonoBehaviour
 {
     public Creature AssingedCreature;
     public Tile TargetTile;
-
+    public float Priority;
     Renderer rend;
 
-    public enum JobType { Excavating,Capture};
+    public enum JobType { Excavating, Capture, ReinforceWall};
 
     public JobType jobType;
    

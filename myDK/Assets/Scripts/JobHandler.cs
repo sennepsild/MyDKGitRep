@@ -24,6 +24,7 @@ public class JobHandler : MonoBehaviour
                 foreach (var jobbo in availableJobs)
                 {
                     float distance = Vector3.Distance(jobbo.transform.position, creat.transform.position);
+                    distance += jobbo.Priority;
                     if (distance < shortestDistance)
                     {
                         shortestDistance = distance;

@@ -46,6 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AssingedCreature: {fileID: 0}
   TargetTile: {fileID: 0}
+  Priority: 2
   jobType: 1
 --- !u!1 &1919826397122295216
 GameObject:
@@ -65,7 +66,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2862749527958192757
 Transform:
   m_ObjectHideFlags: 0

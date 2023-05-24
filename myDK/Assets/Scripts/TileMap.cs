@@ -7,17 +7,21 @@ public class TileMap : MonoBehaviour
 {
     public static TileMap instance;
     public Dictionary<Vector2, Tile> Tiles = new Dictionary<Vector2, Tile>();
+
+    public List<Tile> CapturedTiles = new List<Tile>();
+
     public NavMeshSurface navSurface;
 
     public GameObject ExeJobPrefab;
     public GameObject CapJobPrefab;
+    public GameObject CapWallJobPrefab;
     public GameObject CreatureToSpawn;
 
     Vector2[] directions =
         {
             Vector2.left,
-            Vector2.right,
             Vector2.up,
+            Vector2.right,
             Vector2.down
         };
     private void Awake()
@@ -37,7 +41,77 @@ public class TileMap : MonoBehaviour
         GenerateDiggingJobAt(pos);
         GenerateCaptureJobAt(pos);
         RemoveDigginJobsAtNeigbour(pos);
+        RemoveReinforceJobsAtNeigbour(pos);
         StartCoroutine(UpdateNavMeshWithDelay(navSurface));
+    }
+
+    public void ReinForceDirtAt(Vector2 pos, bool CornerCall = false)
+    {
+        if (!Tiles[pos].HasBlock) return;
+        Tiles[pos].DirtBlock.Capture();
+        RemoveReinforceJobsAtNeigbour(pos);
+        if(!CornerCall)
+        ReinforceCorner(pos);
+    }
+
+    public void ReinforceCorner(Vector2 pos)
+    {
+        for (int i = 0; i < directions.Length; i++)
+        {
+            if(Tiles.ContainsKey(pos + directions[i]))
+            {
+                if (!TileIsAccessable(pos + directions[i]) && TileIsHas2ReinforecedNeigbours(pos + directions[i]) && TileHasAccessDiagonal(pos + directions[i]))
+                {
+                    Tiles[pos + directions[i]].Reinforced = true;
+                    Tiles[pos + directions[i]].Health = Tiles[pos + directions[i]].ReinForcedHealth;
+                    ReinForceDirtAt(pos + directions[i],true);
+                }
+            }
+        }
+    }
+    public bool TileIsHas2ReinforecedNeigbours(Vector2 pos)
+    {
+        int amount = 0;
+        for (int i = 0; i < directions.Length; i++)
+        {
+            if (Tiles.ContainsKey(pos + directions[i]) && Tiles[pos + directions[i]].Reinforced)
+            {
+                amount++;
+                if (amount == 2)
+                    return true;
+            }
+        }
+        
+        return false;
+    }
+
+    public bool TileHasAccessDiagonal(Vector2 pos)
+    {
+        for (int i = 0; i < directions.Length; i++)
+        {
+            if (Tiles.ContainsKey(pos + directions[i] + directions[(i+1)%4]) && !Tiles[pos + directions[i] + directions[(i + 1) % 4]].HasBlock)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool TileIsAccessable(Vector2 pos)
+    {
+        for (int i = 0; i < directions.Length; i++)
+        {
+            if (Tiles.ContainsKey(pos + directions[i]) && !Tiles[pos+directions[i]].HasBlock)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Tile GetRandomCapturedTile()
+    {
+        return CapturedTiles[Random.Range(0, CapturedTiles.Count)];
     }
 
     public void CaptureTileAt(Vector2 pos)
@@ -45,7 +119,9 @@ public class TileMap : MonoBehaviour
         if (Tiles[pos].Captured) return;
         Tiles[pos].Captured = true;
         Tiles[pos].Floor.Capture();
+        CapturedTiles.Add(Tiles[pos]);
         GenerateCaptureJobsAtNeigbour(pos);
+        GenerateReinforceJobAt(pos);
     }
 
     public void GenerateDigginJobsAtNeigbour(Vector2 pos)
@@ -72,6 +148,22 @@ public class TileMap : MonoBehaviour
             RemoveDigginJobsAt(pos + directions[i]);
         }
     }
+    public void RemoveReinforceJobsAtNeigbour(Vector2 pos)
+    {
+        if (!Tiles.ContainsKey(pos)) return;
+        for (int i = 0; i < directions.Length; i++)
+        {
+            RemoveReinforceJobsAt(pos + directions[i]);
+        }
+    }
+    public void GenerateReinforceJobsAtNeigbour(Vector2 pos)
+    {
+        if (!Tiles.ContainsKey(pos)) return;
+        for (int i = 0; i < directions.Length; i++)
+        {
+            GenerateReinforceJobAt(pos + directions[i]);
+        }
+    }
 
     public void RemoveDigginJobsAt(Vector2 pos)
     {
@@ -85,7 +177,7 @@ public class TileMap : MonoBehaviour
                     int compare = Tiles[pos].Jobs.Count;
                     for (int j = 0; j < compare; j++)
                     {
-                        if (Tiles[pos].Jobs[j].TargetTile == Tiles[pos + directions[i]])
+                        if (Tiles[pos].Jobs[j].TargetTile == Tiles[pos + directions[i]] && Tiles[pos].Jobs[j].jobType == CreatueJob.JobType.Excavating)
                         {
                             CreatueJob obj = Tiles[pos].Jobs[j];
                             Tiles[pos].Jobs.RemoveAt(j);
@@ -99,6 +191,34 @@ public class TileMap : MonoBehaviour
             }
         }
     }
+
+    public void RemoveReinforceJobsAt(Vector2 pos)
+    {
+        if (!Tiles.ContainsKey(pos)) return;
+        for (int i = 0; i < directions.Length; i++)
+        {
+            if (Tiles.ContainsKey(pos + directions[i]))
+            {
+                if (Tiles[pos + directions[i]].Marked || !Tiles[pos + directions[i]].HasBlock || Tiles[pos + directions[i]].Reinforced)
+                {
+                    int compare = Tiles[pos].Jobs.Count;
+                    for (int j = 0; j < compare; j++)
+                    {
+                        if (Tiles[pos].Jobs[j].TargetTile == Tiles[pos + directions[i]] && Tiles[pos].Jobs[j].jobType == CreatueJob.JobType.ReinforceWall)
+                        {
+                            CreatueJob obj = Tiles[pos].Jobs[j];
+                            Tiles[pos].Jobs.RemoveAt(j);
+                            j--;
+                            compare--;
+                            obj.RemoveJob();
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
     public void RemoveCaptureJobAt(Vector2 pos)
     {
         if (!Tiles.ContainsKey(pos)) return;
@@ -165,6 +285,28 @@ public class TileMap : MonoBehaviour
                         Tiles[pos].Jobs.Add(job.GetComponent<CreatueJob>());
                     }
                     
+                }
+            }
+        }
+    }
+
+    public void GenerateReinforceJobAt(Vector2 pos)
+    {
+        if (!Tiles.ContainsKey(pos)) return;
+        if (Tiles[pos].HasBlock) return;
+        if (!Tiles[pos].Captured) return;
+        for (int i = 0; i < directions.Length; i++)
+        {
+            if (Tiles.ContainsKey(pos + directions[i]))
+            {
+                if (!Tiles[pos + directions[i]].Marked && Tiles[pos + directions[i]].HasBlock && !Tiles[pos + directions[i]].Reinforced)
+                {
+                    Vector3 posOffset = new Vector3(directions[i].x, 0, directions[i].y);
+                    posOffset *= 0.3f;
+
+                    GameObject job = Instantiate(CapWallJobPrefab, Tiles[pos].transform.position + posOffset, Quaternion.identity);
+                    job.GetComponent<CreatueJob>().TargetTile = Tiles[pos + directions[i]];
+                    Tiles[pos].Jobs.Add(job.GetComponent<CreatueJob>());
                 }
             }
         }

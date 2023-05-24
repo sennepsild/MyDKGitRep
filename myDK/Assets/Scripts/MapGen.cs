@@ -14,6 +14,7 @@ public class MapGen : MonoBehaviour
     public GameObject defaultCreat;
     public GameObject ExeJobPrefab;
     public GameObject CapJobPrefab;
+    public GameObject CapWallJobPrefab;
 
     NavMeshSurface surface;
     // Start is called before the first frame update
@@ -30,6 +31,7 @@ public class MapGen : MonoBehaviour
         TileMap.instance.CreatureToSpawn = defaultCreat;
         TileMap.instance.ExeJobPrefab = ExeJobPrefab;
         TileMap.instance.CapJobPrefab = CapJobPrefab;
+        TileMap.instance.CapWallJobPrefab = CapWallJobPrefab;
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
